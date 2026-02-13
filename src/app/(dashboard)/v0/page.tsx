@@ -140,7 +140,7 @@ export default function CreateTestV0() {
     : "Hiring Test";
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-pageBg text-zinc-900">
       <div className="mx-auto w-full max-w-[1600px] px-6 py-6">
         <header className="mb-4 flex items-center gap-3">
           <Link
