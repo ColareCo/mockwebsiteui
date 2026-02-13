@@ -182,7 +182,7 @@ export default function CandidatesListPage() {
   return (
     <div className="flex flex-col">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="flex min-h-[72px] items-center justify-between px-8 py-5">
+        <div className="flex h-[72px] items-center justify-between px-8">
           <h1 className="font-fustat text-2xl font-semibold text-graphite">
             Candidates
           </h1>

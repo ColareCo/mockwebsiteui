@@ -52,8 +52,33 @@ const MOCK_RECENT_CANDIDATES = [
   { name: "Alankrit P", appliedFor: "Electrical Design", applied: "2/4/2026" },
 ];
 
+const MOCK_NOTIFICATIONS = [
+  {
+    id: "1",
+    type: "test_completed",
+    message: "Esther Thomas has completed the Mechanical Design Engineer Hiring Test",
+    testTitle: "Mechanical Design Engineer Hiring Test",
+    candidateName: "Esther Thomas",
+    time: "2 hours ago",
+  },
+];
+
 export default function DashboardPage() {
   const [testCounts, setTestCounts] = React.useState<Record<string, number>>({});
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const notifRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    }
+    if (notificationsOpen) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [notificationsOpen]);
   React.useEffect(() => {
     const counts: Record<string, number> = {};
     for (const r of ROLES) {
@@ -80,17 +105,44 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col min-h-full">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="flex min-h-[72px] items-center justify-between px-8 py-5">
+        <div className="flex h-[72px] items-center justify-between px-8">
           <h1 className="font-fustat text-2xl font-semibold text-graphite">
             Dashboard
           </h1>
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
-          >
-            <IconBell className="h-5 w-5" />
-          </button>
+          <div className="relative" ref={notifRef}>
+            <button
+              type="button"
+              aria-label="Notifications"
+              aria-expanded={notificationsOpen}
+              onClick={() => setNotificationsOpen((v) => !v)}
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+            >
+              <IconBell className="h-5 w-5" />
+              {MOCK_NOTIFICATIONS.length > 0 && (
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-corePurple" />
+              )}
+            </button>
+            {notificationsOpen && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
+                <div className="border-b border-zinc-100 px-4 py-3">
+                  <h3 className="text-sm font-semibold text-zinc-900">Notifications</h3>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {MOCK_NOTIFICATIONS.map((n) => (
+                    <Link
+                      key={n.id}
+                      href="/candidates"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="block border-b border-zinc-100 px-4 py-3 text-left transition hover:bg-zinc-50 last:border-b-0"
+                    >
+                      <p className="text-sm font-medium text-zinc-900">{n.message}</p>
+                      <p className="mt-0.5 text-xs text-zinc-500">{n.time}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

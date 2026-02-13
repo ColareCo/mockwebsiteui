@@ -33,7 +33,7 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="flex min-h-[72px] items-center justify-between px-8 py-5">
+        <div className="flex h-[72px] items-center justify-between px-8">
           <h1 className="font-fustat text-2xl font-semibold text-graphite">
             Settings
           </h1>
@@ -191,64 +191,6 @@ export default function SettingsPage() {
               <h2 className="text-lg font-semibold text-zinc-900">
                 Test Settings
               </h2>
-              <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-                <div className="flex gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="h-6 w-6 text-emerald-700"
-                    >
-                      <path
-                        d="M12 15v2m-4 4h.01M8 7V4m0 0h4M8 4a4 4 0 1 0 0 8m8-8a4 4 0 1 0 0 8m0 0v2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-emerald-900">
-                      Locking fields for all tests
-                    </h3>
-                    <ul className="mt-3 space-y-2 text-sm text-emerald-800">
-                      <li className="flex items-start gap-2">
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          className="mt-0.5 h-4 w-4 shrink-0"
-                        >
-                          <path
-                            d="M8 11V7a4 4 0 1 1 8 0m-4 8v2m0 0h4m-4 0h-4"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        When a setting is unlocked, its value will be the default for new tests, but users can modify it within individual tests.
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          className="mt-0.5 h-4 w-4 shrink-0"
-                        >
-                          <path
-                            d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        When a setting is locked, its value will be applied to all existing and new tests. Users will not be able to modify it within individual tests.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
               <div className="mt-6 space-y-0 border-t border-zinc-200">
                 {TEST_SETTINGS_SECTIONS.map((section) => {
                   const isExpanded = expandedSections.has(section);

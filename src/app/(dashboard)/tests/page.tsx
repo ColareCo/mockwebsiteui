@@ -161,22 +161,16 @@ export default function TestsListPage() {
   return (
     <div className="flex flex-col">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="flex min-h-[72px] items-center justify-between px-8 py-5">
+        <div className="flex h-[72px] items-center justify-between px-8">
           <h1 className="font-fustat text-2xl font-semibold text-graphite">
             Tests
           </h1>
-          <Link
-            href="/create-test"
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-corePurple px-4 text-sm font-semibold text-white hover:bg-violet"
-          >
-            + Create Test
-          </Link>
         </div>
       </header>
 
       <div className="flex-1 p-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
+        <div className="mb-6 flex w-full items-center gap-3">
+          <div className="relative min-w-0 flex-1">
             <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
             <input
               type="search"
@@ -186,7 +180,7 @@ export default function TestsListPage() {
               className="h-10 w-full rounded-lg border border-zinc-200 bg-white pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-corePurple focus:ring-1 focus:ring-corePurple"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <IconFilter className="h-4 w-4 text-zinc-400" />
             <select className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-700 outline-none focus:border-corePurple">
               <option>All Tests</option>
@@ -194,6 +188,12 @@ export default function TestsListPage() {
               <option>Draft</option>
               <option>Closed</option>
             </select>
+            <Link
+              href="/create-test"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-corePurple px-4 text-sm font-semibold text-white hover:bg-violet"
+            >
+              + Create Test
+            </Link>
           </div>
         </div>
 

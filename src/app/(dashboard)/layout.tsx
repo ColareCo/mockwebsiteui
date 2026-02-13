@@ -186,7 +186,7 @@ export default function DashboardLayout({
           </Link>
         </div>
       </aside>
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="flex min-w-0 flex-1 flex-col">{children}</main>
     </div>
   );
 }
