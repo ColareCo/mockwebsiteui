@@ -219,6 +219,8 @@ For any technical queries, please refer to FAQ or contact support. For other inq
             </button>
             <Link
               href={`/tests/${testId}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
             >
               Try Test

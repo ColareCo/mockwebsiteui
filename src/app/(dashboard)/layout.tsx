@@ -130,9 +130,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isPreview = pathname?.includes("/preview");
 
   return (
     <div className="flex min-h-screen bg-pageBg text-zinc-900">
+      {!isPreview && (
       <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white">
         <div className="flex h-14 items-center px-5">
           <span className="font-fustat text-lg font-semibold text-graphite">
@@ -186,6 +188,7 @@ export default function DashboardLayout({
           </Link>
         </div>
       </aside>
+      )}
       <main className="flex min-w-0 flex-1 flex-col">{children}</main>
     </div>
   );

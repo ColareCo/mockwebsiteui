@@ -818,6 +818,8 @@ export default function TestDetailsPage() {
                 </button>
                 <Link
                   href={`/tests/${testId}/preview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
                 >
                   Try Test
@@ -1005,6 +1007,8 @@ export default function TestDetailsPage() {
               <div className="flex items-center gap-3">
                 <Link
                   href={`/tests/${testId}/preview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
                 >
                   <IconPlay className="h-3.5 w-3.5" />
