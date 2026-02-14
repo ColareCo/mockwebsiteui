@@ -25,3 +25,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-dmsans), ui-sans-serif, system-ui, sans-serif;
 }
+
+@keyframes voicewave {
+  0%, 100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
