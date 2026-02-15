@@ -125,6 +125,20 @@ const SCENARIOS: Scenario[] = [
     badges: ["DFM", "Tolerancing"],
   },
   {
+    type: "onshape",
+    id: "air-nozzle-cad",
+    title: "Client Project: Air Nozzle Design Assessment",
+    skill: "Practical",
+    subtitle: "CAD • Onshape • Design for assembly",
+    taskTitle: "Task 1: Client Project: Air Nozzle Design Assessment",
+    from: "From: Colare Assessment",
+    description: `Model the pneumatic nozzle component shown in the attached engineering drawing. Create a CAD part that matches the specified geometry, dimensions, and design intent.
+
+Use the drawing as the primary source of truth. Build as a manufacturable part (turned body with hex feature). Match critical features: main body Ø0.625 in, outlets Ø0.188 in and Ø0.292 in, tapered sections (75° and 93.6°), hex across flats 0.361 in. Material: Stainless Steel AISI 316. Units: Inches. Document any assumptions.`,
+    imageUrl: "/nozzle-drawing.png",
+    imageCaption: "REFERENCE VIEW • SCALE 1:1",
+  },
+  {
     type: "voice",
     id: "thermal-accuracy",
     title: "Robotic Joint Thermal-Accuracy Trade-off",
@@ -141,24 +155,6 @@ const SCENARIOS: Scenario[] = [
     taskTimeMeta: "~3–5 minutes",
     taskEvalMeta: "Trade-off reasoning, design prioritization, clarity",
     badges: ["Verbal", "45s prep"],
-  },
-  {
-    type: "onshape",
-    id: "gripper-cad",
-    title: "Client Project: Gripper Design Assessment",
-    skill: "Practical",
-    subtitle: "CAD • Onshape • Design for assembly",
-    taskTitle: "Task 1: Client Project: Gripper Design Assessment",
-    from: "From: Colare Assessment",
-    description: `You have been assigned a new project to design a robotic gripper for a pick-and-place application. The immediate goal is to create a CAD model that validates geometry, range of motion, and basic compliance before committing to a production design.
-
-Existing issues with current grippers in the assembly line include inconsistent grip force and limited jaw clearance for certain part geometries. Your task is to design a new gripper head that delivers consistent clamping force while accommodating the required range of motion.
-
-Follow the desired material and design intent from the drawing. Ensure the model handles the specified loads and interfaces correctly with the mounting flange. Good design practice and manufacturability should be considered.
-
-The gripper drawing and information sheet are attached as primary references. Follow the given dimensions and design intent closely. Make reasonable assumptions for any unclear details and note them in your submission.`,
-    imageUrl: "/gripper-drawing.png",
-    imageCaption: "REFERENCE VIEW • SCALE 1:1",
   },
 ];
 
@@ -220,6 +216,11 @@ function Icon({ name, className }: { name: string; className?: string }) {
         <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
+    list: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
   };
   return icons[name] ?? null;
 }
@@ -274,6 +275,7 @@ export default function WorkspaceLayoutPage() {
   const [voiceStateByIndex, setVoiceStateByIndex] = React.useState<Record<number, VoiceState>>({});
   const [showVoiceIntroModal, setShowVoiceIntroModal] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"answer" | "notes">("answer");
+  const [cpTimeSeconds, setCpTimeSeconds] = React.useState(45 * 60);
 
   const currentAnswers = answersByIndex[scenarioIndex] ?? getDefaultAnswers(scenario);
   const voiceState = voiceStateByIndex[scenarioIndex] ?? {
@@ -302,6 +304,14 @@ export default function WorkspaceLayoutPage() {
     }, 1000);
     return () => clearTimeout(t);
   }, [scenarioIndex, isVoice, voiceState.recordingStarted, voiceState.countdown, voiceState.stopped]);
+
+  React.useEffect(() => {
+    if (!isOnshape) return;
+    const t = setInterval(() => {
+      setCpTimeSeconds((s) => Math.max(0, s - 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [isOnshape]);
 
   const setSelected = (id: string) =>
     setAnswersByIndex((prev) => ({
@@ -344,51 +354,107 @@ export default function WorkspaceLayoutPage() {
           style={{ backgroundImage: "url(/onshape-backdrop.png)" }}
         />
 
-        {/* Right Messages panel - inset from top and bottom */}
-        <div className="absolute right-0 top-20 bottom-12 flex w-[360px] flex-col rounded-tl-lg border-l border-t border-zinc-300 bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.12)]">
-            {/* Header - light blue bar */}
-            <div className="flex items-center gap-2 bg-[#b8d4e8] px-4 py-3">
-              <button type="button" className="rounded p-1 text-zinc-600 transition hover:bg-white/50" aria-label="Back">
-                <Icon name="arrowLeft" className="h-5 w-5" />
-              </button>
-              <Icon name="messageCircle" className="h-5 w-5 text-zinc-600" />
-              <span className="flex-1 font-medium text-zinc-800">Messages</span>
-              <span className="text-xs text-zinc-500">Just now</span>
-            </div>
-
-            {/* Task content - scrollable */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-3 text-sm leading-relaxed text-zinc-700">
-                {scenario.description.split("\n\n").map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
-
-              {scenario.imageUrl && (
-                <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-2">
-                  <div className="overflow-hidden rounded border border-zinc-200 bg-white">
-                    <Image src={scenario.imageUrl} alt="Reference drawing" width={300} height={180} className="w-full object-contain" />
-                  </div>
-                  {scenario.imageCaption && (
-                    <p className="mt-2 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                      {scenario.imageCaption}
-                    </p>
-                  )}
+        {/* Right Colare Assessment Panel - inset from top and bottom */}
+        <div className="absolute right-0 top-20 bottom-12 flex w-[380px] flex-col overflow-hidden rounded-tl-lg border-l border-t border-zinc-300 bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.12)]">
+          <div className="colare-panel h-full">
+            {/* Header */}
+            <div className="cp-header">
+              <div className="cp-brand">
+                <div className="cp-titleblock">
+                  <div className="cp-title">Air Nozzle Design</div>
                 </div>
-              )}
+              </div>
+              <div className="cp-meta">
+                <div className="cp-pill">
+                  <span className="cp-pill-label">Time</span>
+                  <span className="cp-pill-value">
+                    {`${String(Math.floor(cpTimeSeconds / 60)).padStart(2, "0")}:${String(cpTimeSeconds % 60).padStart(2, "0")}`}
+                  </span>
+                </div>
+                <div className="cp-pill cp-pill-muted">
+                  <span className="cp-pill-label">Question</span>
+                  <span className="cp-pill-value">
+                    {scenarioIndex + 1} of {scenarioTotal}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Submit button */}
-            <div className="border-t border-zinc-200 bg-white p-4">
-              <button
-                type="button"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-corePurple py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
-              >
-                <Icon name="check" className="h-5 w-5" />
-                Submit CAD Design
+            {/* Scrollable content */}
+            <div className="cp-body">
+              <section className="cp-section">
+                <h3 className="cp-h3">Objective</h3>
+                <p className="cp-p">
+                  Model the pneumatic nozzle component shown in the attached engineering drawing. Create a CAD part that matches the specified geometry, dimensions, and design intent.
+                </p>
+              </section>
+
+              <section className="cp-section">
+                <h3 className="cp-h3">Requirements</h3>
+                <ul className="cp-bullets">
+                  <li>Use the drawing as the primary source of truth for all dimensions and angles.</li>
+                  <li>Build the nozzle as a manufacturable part (turned body with hex feature).</li>
+                  <li>Match the following critical features:
+                    <ul className="cp-bullets cp-bullets-nested">
+                      <li>Main body diameter: Ø0.625 in</li>
+                      <li>Outlet diameters: Ø0.188 in and Ø0.292 in</li>
+                      <li>Tapered section lengths and angles (75° and 93.6°)</li>
+                      <li>Hex profile across flats: 0.361 in</li>
+                    </ul>
+                  </li>
+                  <li>Ensure sketch geometry is fully constrained and parametric.</li>
+                </ul>
+              </section>
+
+              <section className="cp-section">
+                <h3 className="cp-h3">Material + Assumptions</h3>
+                <div className="cp-kv">
+                  <div className="cp-kv-row"><span>Material</span><span className="cp-kv-val">Stainless Steel AISI 316 (per note on drawing)</span></div>
+                  <div className="cp-kv-row"><span>Units</span><span className="cp-kv-val">Inches</span></div>
+                </div>
+                <p className="cp-p cp-p-muted cp-mt">
+                  If any minor detail is missing or ambiguous, make a reasonable engineering assumption and document it.
+                </p>
+              </section>
+
+              <section className="cp-section">
+                <div className="cp-section-row">
+                  <h3 className="cp-h3">Reference</h3>
+                  <button type="button" className="cp-link">Open</button>
+                </div>
+                <div className="cp-ref">
+                  <div className="cp-ref-thumb" role="img" aria-label="Reference drawing preview">
+                    <Image
+                      src={scenario.imageUrl ?? "/nozzle-drawing.png"}
+                      alt="Air nozzle reference"
+                      width={96}
+                      height={72}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <div className="cp-ref-meta">
+                    <div className="cp-ref-title">Air Nozzle — Rev A</div>
+                    <div className="cp-ref-sub">Please refer to the tab &quot;Rev A&quot; beside the tab &quot;Colare Workspace&quot; for the full image.</div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="cp-section cp-section-muted">
+                <h3 className="cp-h3">Tips</h3>
+                <ul className="cp-bullets">
+                  <li>Stay in the provided Part Studio and modify only required features.</li>
+                  <li>Prefer parametric constraints; avoid sketching freehand without dimensions.</li>
+                </ul>
+              </section>
+            </div>
+
+            <div className="cp-footer">
+              <button type="button" className="cp-btn cp-btn-primary" onClick={goNext}>
+                ✓ Submit CAD Design
               </button>
             </div>
           </div>
+        </div>
       </div>
     );
   }

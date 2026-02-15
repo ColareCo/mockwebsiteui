@@ -5,8 +5,25 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 
 type QuestionType = "video" | "multiple-choice" | "long-answer";
+type QuestionStatus = "correct" | "partial" | "incorrect";
 
-const MOCK_QUESTIONS = [
+const MOCK_QUESTIONS: Array<{
+  id: string;
+  title: string;
+  type: string;
+  questionType: QuestionType;
+  skill: string;
+  score: number;
+  maxScore: number;
+  status: QuestionStatus;
+  hasVideo: boolean;
+  language?: string;
+  description: string;
+  tags?: string[];
+  options?: string[];
+  answer?: string;
+  correctAnswer?: string;
+}> = [
   {
     id: "1",
     title: "CAD: Fully constrained sketch with dimensioning",
