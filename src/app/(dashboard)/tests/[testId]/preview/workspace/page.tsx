@@ -42,7 +42,25 @@ type VoiceScenario = {
   badges?: string[];
 };
 
-type Scenario = McqScenario | VoiceScenario;
+type OnshapeScenario = {
+  type: "onshape";
+  id: string;
+  title: string;
+  skill: string;
+  subtitle: string;
+  /** Task title shown in panel header (e.g. "Task 1: Client Project: Nozzle Design Assessment") */
+  taskTitle: string;
+  /** Sender line (e.g. "From: Alex Reynolds") */
+  from: string;
+  /** Multi-paragraph project description for the Messages panel */
+  description: string;
+  /** Optional embedded reference drawing in the panel */
+  imageUrl?: string;
+  /** Optional image caption (e.g. "TOP VIEW • SCALE 1:1") */
+  imageCaption?: string;
+};
+
+type Scenario = McqScenario | VoiceScenario | OnshapeScenario;
 
 const SCENARIOS: Scenario[] = [
   {
@@ -124,6 +142,24 @@ const SCENARIOS: Scenario[] = [
     taskEvalMeta: "Trade-off reasoning, design prioritization, clarity",
     badges: ["Verbal", "45s prep"],
   },
+  {
+    type: "onshape",
+    id: "gripper-cad",
+    title: "Client Project: Gripper Design Assessment",
+    skill: "Practical",
+    subtitle: "CAD • Onshape • Design for assembly",
+    taskTitle: "Task 1: Client Project: Gripper Design Assessment",
+    from: "From: Colare Assessment",
+    description: `You have been assigned a new project to design a robotic gripper for a pick-and-place application. The immediate goal is to create a CAD model that validates geometry, range of motion, and basic compliance before committing to a production design.
+
+Existing issues with current grippers in the assembly line include inconsistent grip force and limited jaw clearance for certain part geometries. Your task is to design a new gripper head that delivers consistent clamping force while accommodating the required range of motion.
+
+Follow the desired material and design intent from the drawing. Ensure the model handles the specified loads and interfaces correctly with the mounting flange. Good design practice and manufacturability should be considered.
+
+The gripper drawing and information sheet are attached as primary references. Follow the given dimensions and design intent closely. Make reasonable assumptions for any unclear details and note them in your submission.`,
+    imageUrl: "/gripper-drawing.png",
+    imageCaption: "REFERENCE VIEW • SCALE 1:1",
+  },
 ];
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -169,6 +205,21 @@ function Icon({ name, className }: { name: string; className?: string }) {
         <path d="M12 19v3M9 22h6" strokeLinecap="round" />
       </svg>
     ),
+    arrowLeft: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    messageCircle: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    check: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
   };
   return icons[name] ?? null;
 }
@@ -191,6 +242,10 @@ const getDefaultMcqAnswers = (scenario: McqScenario): ScenarioAnswers => ({
 const getDefaultAnswers = (scenario: Scenario): ScenarioAnswers =>
   scenario.type === "mcq" ? getDefaultMcqAnswers(scenario) : { selected: "", rationale: "", notes: "" };
 
+function isOnshapeScenario(s: Scenario): s is OnshapeScenario {
+  return s.type === "onshape";
+}
+
 export default function WorkspaceLayoutPage() {
   const params = useParams<{ testId: string }>();
   const router = useRouter();
@@ -205,6 +260,7 @@ export default function WorkspaceLayoutPage() {
   const scenarioTotal = SCENARIOS.length;
   const isMcq = scenario.type === "mcq";
   const isVoice = scenario.type === "voice";
+  const isOnshape = scenario.type === "onshape";
 
   const [answersByIndex, setAnswersByIndex] = React.useState<Record<number, ScenarioAnswers>>(() => ({
     0: {
@@ -278,6 +334,64 @@ export default function WorkspaceLayoutPage() {
   };
 
   const progress = Math.round(((scenarioIndex + 1) / scenarioTotal) * 100);
+
+  if (isOnshape && isOnshapeScenario(scenario)) {
+    return (
+      <div className="relative h-screen overflow-hidden bg-[#e8e8e8]">
+        {/* Full-screen backdrop: Onshape screenshot */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url(/onshape-backdrop.png)" }}
+        />
+
+        {/* Right Messages panel - inset from top and bottom */}
+        <div className="absolute right-0 top-20 bottom-12 flex w-[360px] flex-col rounded-tl-lg border-l border-t border-zinc-300 bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.12)]">
+            {/* Header - light blue bar */}
+            <div className="flex items-center gap-2 bg-[#b8d4e8] px-4 py-3">
+              <button type="button" className="rounded p-1 text-zinc-600 transition hover:bg-white/50" aria-label="Back">
+                <Icon name="arrowLeft" className="h-5 w-5" />
+              </button>
+              <Icon name="messageCircle" className="h-5 w-5 text-zinc-600" />
+              <span className="flex-1 font-medium text-zinc-800">Messages</span>
+              <span className="text-xs text-zinc-500">Just now</span>
+            </div>
+
+            {/* Task content - scrollable */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-3 text-sm leading-relaxed text-zinc-700">
+                {scenario.description.split("\n\n").map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
+
+              {scenario.imageUrl && (
+                <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-2">
+                  <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+                    <Image src={scenario.imageUrl} alt="Reference drawing" width={300} height={180} className="w-full object-contain" />
+                  </div>
+                  {scenario.imageCaption && (
+                    <p className="mt-2 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                      {scenario.imageCaption}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Submit button */}
+            <div className="border-t border-zinc-200 bg-white p-4">
+              <button
+                type="button"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-corePurple py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+              >
+                <Icon name="check" className="h-5 w-5" />
+                Submit CAD Design
+              </button>
+            </div>
+          </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8ff]">
