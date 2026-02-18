@@ -291,7 +291,6 @@ function OnshapeCredentialsSection() {
         </span>
         OnShape Login Credentials
       </h3>
-      <p className="mt-1 text-xs font-medium text-zinc-600">Use these to log in to OnShape in the new tab</p>
       <div className="mt-4 space-y-3 rounded-xl border-2 border-corePurple/20 bg-white/90 p-4">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-semibold text-zinc-700">Email</span>
@@ -303,10 +302,6 @@ function OnshapeCredentialsSection() {
           <span className="flex-1 text-right font-mono text-sm font-semibold text-zinc-900">Applicant11499</span>
           <CopyButton value="Applicant11499" />
         </div>
-      </div>
-      <div className="mt-4 flex items-start gap-2 rounded-lg border-2 border-amber-300 bg-amber-100 px-4 py-3 text-sm font-semibold text-amber-900">
-        <span className="shrink-0 text-amber-600">!</span>
-        <span>Log in to OnShape with these credentials in the new tab that opened.</span>
       </div>
     </section>
   );
@@ -617,14 +612,60 @@ export default function WorkspaceLayoutPage() {
         </div>
       </div>
 
-      {/* 2-column workspace */}
+      {/* Workspace Content */}
+      {isOnshape && !onshapeWorkspaceOpen ? (
+        <div className="mx-auto max-w-[1400px] px-4 py-4">
+          <div className="flex h-[calc(100vh-88px)] flex-col items-center justify-center gap-12 rounded-2xl border border-zinc-200/80 bg-white p-8 shadow-sm">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-corePurple/20 to-violet/10 shadow-[0_8px_32px_-8px_rgba(77,62,240,0.25)]">
+                <svg className="h-10 w-10 text-corePurple" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-zinc-900">CAD Design Assessment</h2>
+                <p className="mt-3 max-w-lg text-base text-zinc-500">
+                  You are about to enter the Onshape environment. Please keep this tab open and use the credentials below to log in.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setHasOpenedCadWorkspaceByIndex((prev) => ({ ...prev, [scenarioIndex]: true }));
+                  setOnshapeWorkspaceOpenByIndex((prev) => ({ ...prev, [scenarioIndex]: true }));
+                }}
+                className={`mt-2 inline-flex w-full min-w-[240px] items-center justify-center gap-2.5 rounded-xl px-8 py-4 text-base font-semibold shadow transition ${
+                  hasOpenedCadWorkspaceByIndex[scenarioIndex]
+                    ? "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    : "bg-gradient-to-b from-corePurple to-[#4338ca] text-white shadow-[0_4px_14px_rgba(77,62,240,0.4)] hover:shadow-[0_6px_20px_rgba(77,62,240,0.45)] hover:-translate-y-0.5"
+                }`}
+              >
+                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                {hasOpenedCadWorkspaceByIndex[scenarioIndex] ? "CAD workspace open" : "Open CAD workspace"}
+              </button>
+            </div>
+
+            <div className="w-full max-w-xl">
+              <OnshapeCredentialsSection />
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Center: Document brief */}
         <div className="h-[calc(100vh-88px)] overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
           <div className="border-b border-zinc-100 px-4 py-3">
             <div>
               <div className="text-sm font-semibold text-zinc-900">Design brief</div>
-              <div className="text-xs text-zinc-500">Read the context, then decide your approach</div>
+              <div className="text-xs text-zinc-500">
+                {isOnshape && !onshapeWorkspaceOpen ? "Read the context below before beginning" : "Read the context, then decide your approach"}
+              </div>
             </div>
           </div>
           <div className="h-[calc(100vh-160px)] overflow-y-auto p-4">
@@ -636,7 +677,38 @@ export default function WorkspaceLayoutPage() {
                     <p>
                       This exercise evaluates your ability to interpret an engineering drawing and model a manufacturable component in a professional CAD environment. All task details and submission instructions are provided inside the workspace.
                     </p>
-                    <p>Please use the login credentials below to access your CAD design environment. When you&apos;re ready, click &quot;Open CAD workspace&quot; on the right to begin.</p>
+                    <p>Use the login credentials below to access Onshape. When you&apos;re ready, click &quot;Open CAD workspace&quot; on the right to begin.</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Assessment overview</div>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div className="text-xs font-medium text-zinc-700">Duration</div>
+                        <div className="mt-1 text-sm text-zinc-600">~45 minutes</div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div className="text-xs font-medium text-zinc-700">Tool</div>
+                        <div className="mt-1 text-sm text-zinc-600">Onshape (browser-based CAD)</div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div className="text-xs font-medium text-zinc-700">Deliverable</div>
+                        <div className="mt-1 text-sm text-zinc-600">Fully constrained 3D part model</div>
+                      </div>
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div className="text-xs font-medium text-zinc-700">Units</div>
+                        <div className="mt-1 text-sm text-zinc-600">Inches</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-200 p-4">
+                    <div className="text-sm font-semibold text-zinc-900">Process</div>
+                    <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-zinc-600">
+                      <li>Log in to Onshape using the credentials below</li>
+                      <li>Click &quot;Open CAD workspace&quot;</li>
+                      <li>Complete and submit your model inside the workspace</li>
+                    </ol>
                   </div>
 
                   <OnshapeCredentialsSection />
@@ -1018,6 +1090,7 @@ export default function WorkspaceLayoutPage() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
