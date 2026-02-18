@@ -24,42 +24,42 @@ type SectionState = {
   questions: Question[];
 };
 
+// ============================================================================
+// HARDCODED PREVIEW FOR MECHANICAL DESIGN ENGINEER HIRING TEST
+// These tasks match the "CAD" job in "Darkness Stream" company
+// ============================================================================
 const USE_MOCK_PREVIEW = true;
 const MOCK_PREVIEW_QUESTIONS: Question[] = [
   {
-    id: "mock-mcq-1",
-    title: "Robotic Gripper Validation",
-    skill: "Technical",
-    type: "Multiple Choice",
-    timeMinutes: 5,
-    description: "You are designing a new robotic gripper for a pick-and-place application. The immediate goal is to validate geometry, range of motion, and basic compliance before committing to a production design.\n\nSome points to consider:\n\n• Validation must be completed within 6 days\n• Multiple design iterations may be required\n• Strength, wear life, and surface finish are not part of this validation phase\n• Low cost and fast turnaround are prioritized over material fidelity",
-    options: ["CNC-machined aluminum", "Sheet-metal steel fabrication", "Laser cut from Acrylic sheets", "3D-printed prototype"],
-    imageUrl: "/gripper-drawing.png",
-  },
-  {
-    id: "mock-mcq-2",
-    title: "DFM Principle Application",
+    id: "material-selection-dfm-001",
+    title: "Material Selection for CNC Manufacturing",
     skill: "Problem Solving",
     type: "Multiple Choice",
-    timeMinutes: 5,
-    description: "When dimensioning a part for manufacturability, which tolerance strategy is generally preferred for mating features?",
-    options: ["Widest possible tolerances", "Tight tolerances throughout", "Functional tolerances based on fit", "No tolerances specified"],
+    timeMinutes: 4,
+    description: "A design calls for a structural bracket that will be CNC machined. The part requires:\n\n• Moderate strength (not high-stress application)\n• Moderate corrosion resistance\n• Cost is a significant factor\n• Production quantity: 500 units\n\nWhich material choice BEST balances DFM principles with functional requirements?",
+    options: [
+      "Stainless steel 316 – excellent corrosion resistance",
+      "Aluminum 6061 – good strength-to-weight, easy to machine",
+      "Titanium – superior strength and corrosion resistance",
+      "Tool steel – maximum hardness and durability"
+    ],
   },
   {
-    id: "mock-voice-1",
-    title: "Robotic Joint Thermal-Accuracy Trade-off",
+    id: "task_cad_bracket_assembly_001",
+    title: "Motor Mount Bracket Assembly",
+    skill: "Practical",
+    type: "CAD",
+    timeMinutes: 30,
+    description: "Create a 3D CAD model of the motor mount bracket assembly as shown in the reference drawing.\n\nThe assembly consists of:\n• T-Type Base Plate (150mm × 100mm × 6mm)\n• Vertical support posts (2× Ø8mm steel rods)\n• Motor mounting bracket (offset 45mm from base)\n• 4× M6 clearance holes on base plate\n\nFocus on accurate dimensions, proper constraints, and manufacturability. Units: Millimeters.",
+    imageUrl: "/bracket-ref.png",
+  },
+  {
+    id: "voice_design_critique_001",
+    title: "Design Critique: CAD Model Review",
     skill: "Verbal",
     type: "Voice",
     timeMinutes: 5,
-    description: "A high-precision robotic joint operates inside a sealed enclosure due to environmental exposure (dust, coolant mist).\n\nObserved issues:\n• Motor overheats during continuous operation\n• Joint accuracy degrades after warm-up\n\nConstraints:\n• Joint size cannot increase\n• Sealing cannot be compromised\n• Bearing preload is already near allowable limits\n\nExplain how you would approach this problem, including:\n• Why improving thermal conduction can conflict with accuracy\n• Which design changes you would prioritize first\n• What trade-offs you would explicitly accept",
-  },
-  {
-    id: "mock-sim-1",
-    title: "Component Positioning for Assembly",
-    skill: "Practical",
-    type: "Simulation",
-    timeMinutes: 10,
-    description: "Use the controls below to position the component within the tolerance zone. The goal is to achieve the best possible fit for the assembly.",
+    description: "Review the CAD model you just created and provide a verbal critique of your design decisions.\n\nExplain your design approach for the motor mount bracket. Discuss:\n• Why you chose specific dimensions\n• How you ensured manufacturability\n• What constraints guided your design\n• Any trade-offs you made\n\nSpeak clearly and cover the key design decisions. Time limit: 2-3 minutes.",
   },
 ];
 

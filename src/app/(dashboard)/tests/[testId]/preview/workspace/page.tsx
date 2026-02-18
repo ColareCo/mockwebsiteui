@@ -62,99 +62,79 @@ type OnshapeScenario = {
 
 type Scenario = McqScenario | VoiceScenario | OnshapeScenario;
 
+// ============================================================================
+// HARDCODED TASKS FOR MECHANICAL DESIGN ENGINEER HIRING TEST
+// These tasks match the "CAD" job in "Darkness Stream" company
+// ============================================================================
 const SCENARIOS: Scenario[] = [
   {
     type: "mcq",
-    id: "gripper",
-    title: "Robotic Gripper Validation",
-    skill: "Technical",
-    subtitle: "Mechanical / Robotics • Early validation strategy",
-    description:
-      "You are designing a new robotic gripper for a pick-and-place application. The immediate goal is to validate geometry, range of motion, and basic compliance before committing to a production design.",
-    constraints: [
-      { k: "Timeline", v: "Validation must be completed within 6 days" },
-      { k: "Iteration", v: "Multiple design iterations may be required" },
-      { k: "Out of scope", v: "Strength, wear life, and surface finish" },
-      { k: "Priority", v: "Low cost + fast turnaround over material fidelity" },
-    ],
-    imageUrl: "/gripper-drawing.png",
-    taskText:
-      "Choose the fabrication approach you would use first to validate geometry and motion within the constraints. Then provide a short rationale.",
-    taskTimeMeta: "~2–4 minutes",
-    taskEvalMeta: "Tradeoffs, iteration plan, clarity",
-    optionPrompt: "Pick your approach",
-    optionHint: "Choose the method you would use first for rapid validation.",
-    options: [
-      { id: "cnc", label: "CNC-machined aluminum", meta: "High fidelity • Higher cost • Longer lead" },
-      { id: "sheet", label: "Sheet-metal steel fabrication", meta: "Moderate fidelity • Medium speed" },
-      { id: "laser", label: "Laser-cut acrylic sheets", meta: "Fast • Low cost • Limited stiffness" },
-      { id: "print", label: "3D-printed prototype", meta: "Fastest iteration • Low cost" },
-    ],
-    rationalePlaceholder: "Explain why this is the best first step given the constraints…",
-    rationaleHint: "2–5 sentences. Explain tradeoffs + iteration plan.",
-    notePrompts: ["What would you test first?", "What would you learn in the first iteration?", "If iteration 1 fails, what changes next?"],
-    badges: ["Early validation", "6-day window"],
-  },
-  {
-    type: "mcq",
-    id: "dfm",
-    title: "DFM Principle Application",
+    id: "material-selection-dfm-001",
+    title: "Material Selection for CNC Manufacturing",
     skill: "Problem Solving",
-    subtitle: "Manufacturing • Tolerance strategy",
+    subtitle: "Manufacturing • DFM • Material selection",
     description:
-      "When dimensioning a part for manufacturability, the choice of tolerance strategy directly impacts cost, lead time, and assembly quality. Mating features—such as shaft/hole fits, bolt clearances, or locating pins—require careful consideration of function vs. manufacturability.",
+      "A design calls for a structural bracket that will be CNC machined. The part requires:\n\n• Moderate strength (not high-stress application)\n• Moderate corrosion resistance\n• Cost is a significant factor\n• Production quantity: 500 units",
     constraints: [
-      { k: "Context", v: "Mating features (e.g. shaft/hole, bolt/bore)" },
-      { k: "Goal", v: "Balance manufacturability with required function" },
-      { k: "Priority", v: "Apply Design for Manufacturability (DFM) principles" },
+      { k: "Timeline", v: "Moderate lead time acceptable" },
+      { k: "Strength Requirements", v: "Moderate strength needed, not high-stress" },
+      { k: "Corrosion Resistance", v: "Moderate protection required" },
+      { k: "Cost Priority", v: "Cost is a significant factor for 500 unit production" },
     ],
-    taskText: "Select the tolerance strategy you would generally prefer for mating features, and explain your reasoning.",
-    taskTimeMeta: "~2–3 minutes",
-    taskEvalMeta: "DFM understanding, tradeoff reasoning",
-    optionPrompt: "Select the preferred strategy",
-    optionHint: "Which approach best aligns with DFM for mating features?",
+    taskText: "Which material choice BEST balances DFM principles with functional requirements?",
+    taskTimeMeta: "~2–4 minutes",
+    taskEvalMeta: "Cost analysis, DFM principles, trade-off reasoning",
+    optionPrompt: "Select the best material",
+    optionHint: "Consider cost, machinability, and functional requirements.",
     options: [
-      { id: "widest", label: "Widest possible tolerances", meta: "Lower cost • Easiest to machine • May compromise fit" },
-      { id: "tight", label: "Tight tolerances throughout", meta: "Best fit • Higher cost • Longer lead" },
-      { id: "functional", label: "Functional tolerances based on fit", meta: "Fit-driven • Balanced cost • Standard approach" },
-      { id: "none", label: "No tolerances specified", meta: "Not recommended • Ambiguous • Risk of rework" },
+      { id: "optA", label: "Stainless steel 316 – excellent corrosion resistance", meta: "High cost • Excellent corrosion resistance • Good strength" },
+      { id: "optB", label: "Aluminum 6061 – good strength-to-weight, easy to machine", meta: "Moderate cost • Easy to machine • Good strength-to-weight" },
+      { id: "optC", label: "Titanium – superior strength and corrosion resistance", meta: "Very high cost • Excellent properties • Difficult to machine" },
+      { id: "optD", label: "Tool steel – maximum hardness and durability", meta: "High cost • Very hard • Specialized machining required" },
     ],
-    rationalePlaceholder: "Explain why this strategy is preferred for mating features…",
-    rationaleHint: "2–4 sentences. Consider cost, fit, and manufacturability.",
-    notePrompts: ["What drives tolerance selection for mating features?", "How does tighter tolerance affect cost and lead time?", "When would you specify different tolerances for different features?"],
-    badges: ["DFM", "Tolerancing"],
+    rationalePlaceholder: "Provide a detailed explanation for your material selection...",
+    rationaleHint: "50–250 words. Consider strength, corrosion resistance, cost-effectiveness, machinability, and trade-offs.",
+    notePrompts: ["What are the key requirements?", "What materials meet these requirements?", "What are the cost implications?", "What are the trade-offs?"],
+    badges: ["DFM", "Material Selection"],
   },
   {
     type: "onshape",
-    id: "air-nozzle-cad",
-    title: "Client Project: Air Nozzle Design Assessment",
+    id: "task_cad_bracket_assembly_001",
+    title: "Motor Mount Bracket Assembly",
     skill: "Practical",
-    subtitle: "CAD • Onshape • Design for assembly",
-    taskTitle: "Task 1: Client Project: Air Nozzle Design Assessment",
+    subtitle: "CAD • Onshape • Assembly modeling",
+    taskTitle: "Task 2: Motor Mount Bracket Assembly",
     from: "From: Colare Assessment",
-    description: `Model the pneumatic nozzle component shown in the attached engineering drawing. Create a CAD part that matches the specified geometry, dimensions, and design intent.
+    description: `Design a motor mount bracket assembly in Onshape following the reference specifications. This task tests your ability to read engineering drawings, apply CAD modeling best practices, and create manufacturable designs.
 
-Use the drawing as the primary source of truth. Build as a manufacturable part (turned body with hex feature). Match critical features: main body Ø0.625 in, outlets Ø0.188 in and Ø0.292 in, tapered sections (75° and 93.6°), hex across flats 0.361 in. Material: Stainless Steel AISI 316. Units: Inches. Document any assumptions.`,
-    imageUrl: "/nozzle-drawing.png",
-    imageCaption: "REFERENCE VIEW • SCALE 1:1",
+Create a 3D CAD model of the motor mount bracket assembly as shown in the reference drawing. Focus on accurate dimensions, proper constraints, and manufacturability.
+
+Replicate the motor mount bracket assembly as shown in the reference drawing. The assembly consists of:
+• T-Type Base Plate (150mm × 100mm × 6mm)
+• Vertical support posts at specified locations (2× Ø8mm steel rods)
+• Motor mounting bracket with correct offset (45mm from base)
+• 4× M6 clearance holes on base plate
+
+Units: Millimeters (mm). Manufacturing: CNC machining + welded assembly. Standard tolerances unless specified.`,
+    imageUrl: "/bracket-ref.png",
+    imageCaption: "ASSEMBLY VIEW • SCALE 1:2 • 150mm W × 100mm H × 51mm D",
   },
   {
     type: "voice",
-    id: "thermal-accuracy",
-    title: "Robotic Joint Thermal-Accuracy Trade-off",
+    id: "voice_design_critique_001",
+    title: "Design Critique: CAD Model Review",
     skill: "Verbal",
-    subtitle: "Thermal • Precision • Design trade-offs",
+    subtitle: "Communication • Design rationale • Trade-offs",
     description:
-      "A high-precision robotic joint operates inside a sealed enclosure due to environmental exposure (dust, coolant mist).\n\nObserved issues:\n• Motor overheats during continuous operation\n• Joint accuracy degrades after warm-up\n\nYou must explain how you would approach this problem, including why improving thermal conduction can conflict with accuracy, which design changes you would prioritize first, and what trade-offs you would explicitly accept.",
+      "Review the CAD model you just created and provide a verbal critique of your design decisions.\n\nExplain your design approach for the motor mount bracket. Discuss:\n\n• Why you chose specific dimensions\n• How you ensured manufacturability\n• What constraints guided your design\n• Any trade-offs you made",
     constraints: [
-      { k: "Size", v: "Joint size cannot increase" },
-      { k: "Sealing", v: "Sealing cannot be compromised" },
-      { k: "Preload", v: "Bearing preload is already near allowable limits" },
+      { k: "Time Limit", v: "2-3 minutes recommended" },
+      { k: "Focus Areas", v: "Design rationale, DFM considerations, constraints" },
     ],
-    taskText: "Record a verbal response explaining your approach, prioritization, and accepted trade-offs.",
+    taskText: "Record your design critique. Speak clearly and cover the key design decisions you made.",
     taskTimeMeta: "~3–5 minutes",
-    taskEvalMeta: "Trade-off reasoning, design prioritization, clarity",
-    badges: ["Verbal", "45s prep"],
+    taskEvalMeta: "Clarity of explanation, technical depth, design justification",
+    badges: ["Verbal", "30s prep"],
   },
 ];
 

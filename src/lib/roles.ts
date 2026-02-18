@@ -13,6 +13,8 @@ export type Role = {
     testTitle: string;
     durationMinutes: number;
     sections: TestSection[];
+    /** Optional: External preview URL (overrides default preview page) */
+    previewUrl?: string;
   };
 };
 
@@ -35,6 +37,7 @@ export const ROLES: Role[] = [
           subtitle: "1 Dimensional control question",
         },
       ],
+      previewUrl: "https://dev.d2jomrkv8mmxdn.amplifyapp.com/assessment?instance=mech-design-engineer-preview",
     },
   },
   {

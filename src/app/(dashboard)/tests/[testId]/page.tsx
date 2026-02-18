@@ -817,7 +817,7 @@ export default function TestDetailsPage() {
                   Share
                 </button>
                 <Link
-                  href={`/tests/${testId}/preview`}
+                  href={role?.preview.previewUrl ?? `/tests/${testId}/preview`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
@@ -1006,7 +1006,7 @@ export default function TestDetailsPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Link
-                  href={`/tests/${testId}/preview`}
+                  href={role?.preview.previewUrl ?? `/tests/${testId}/preview`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
