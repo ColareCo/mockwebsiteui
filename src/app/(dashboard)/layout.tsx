@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import * as React from "react";
+import { getUserContext, type ApiUserContext } from "@/lib/api";
 
 function IconGrid(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -131,6 +133,32 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const isPreview = pathname?.includes("/preview");
+  const [userContext, setUserContext] = React.useState<ApiUserContext>({
+    displayName: "User",
+    email: "unknown@colare.co",
+    companyName: "Company",
+  });
+
+  React.useEffect(() => {
+    let isMounted = true;
+    getUserContext()
+      .then((ctx) => {
+        if (isMounted) setUserContext(ctx);
+      })
+      .catch(() => {
+        // Keep fallback values.
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleLogout = React.useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem("recruit_auth_token");
+    window.localStorage.removeItem("recruit_user");
+    window.location.href = "/";
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-pageBg text-zinc-900">
@@ -144,14 +172,14 @@ export default function DashboardLayout({
         <div className="border-t border-zinc-100 px-3 py-4">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-corePurple text-sm font-semibold text-white">
-              P
+              {initials(userContext.companyName).slice(0, 1)}
             </div>
             <div className="min-w-0">
               <div className="truncate text-sm font-medium text-zinc-900">
-                PCITEST
+                {userContext.companyName}
               </div>
               <div className="truncate text-xs text-zinc-500">
-                sho@tester.com
+                {userContext.email}
               </div>
             </div>
           </div>
@@ -179,13 +207,14 @@ export default function DashboardLayout({
           })}
         </nav>
         <div className="border-t border-zinc-100 p-3">
-          <Link
-            href="#"
+          <button
+            type="button"
+            onClick={handleLogout}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
           >
             <IconLogout className="h-5 w-5" />
             Logout
-          </Link>
+          </button>
         </div>
       </aside>
       )}
