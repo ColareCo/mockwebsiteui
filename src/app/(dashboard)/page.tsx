@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ROLES } from "@/lib/roles";
+import {
+  getDashboardData,
+  getNotifications,
+  type ApiDashboardApplication,
+  type ApiDashboardData,
+  type ApiNotification,
+} from "@/lib/api";
 
 function IconBell(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -45,26 +51,23 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-// Mock recent candidates - aggregated from localStorage or use seed data
-const MOCK_RECENT_CANDIDATES = [
-  { name: "Nain Abdi", appliedFor: "Firmware Engineering", applied: "2/9/2026" },
-  { name: "Esther Thomas", appliedFor: "Mechanical Design", applied: "2/4/2026" },
-  { name: "Alankrit P", appliedFor: "Electrical Design", applied: "2/4/2026" },
-];
+function toCandidateName(application: ApiDashboardApplication) {
+  const first = application.candidate?.firstName?.trim() ?? "";
+  const last = application.candidate?.lastName?.trim() ?? "";
+  const full = `${first} ${last}`.trim();
+  return full || "Unknown Candidate";
+}
 
-const MOCK_NOTIFICATIONS = [
-  {
-    id: "1",
-    type: "test_completed",
-    message: "Esther Thomas has completed the Mechanical Design Engineer Hiring Test",
-    testTitle: "Mechanical Design Engineer Hiring Test",
-    candidateName: "Esther Thomas",
-    time: "2 hours ago",
-  },
-];
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString();
+}
 
 export default function DashboardPage() {
-  const [testCounts, setTestCounts] = React.useState<Record<string, number>>({});
+  const [dashboard, setDashboard] = React.useState<ApiDashboardData | null>(null);
+  const [notifications, setNotifications] = React.useState<ApiNotification[]>([]);
+  const [unreadCount, setUnreadCount] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
   const notifRef = React.useRef<HTMLDivElement>(null);
 
@@ -80,27 +83,55 @@ export default function DashboardPage() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [notificationsOpen]);
   React.useEffect(() => {
-    const counts: Record<string, number> = {};
-    for (const r of ROLES) {
-      try {
-        const raw = window.localStorage.getItem(`invites:${r.id}`);
-        const parsed = raw ? JSON.parse(raw) : [];
-        counts[r.id] = Array.isArray(parsed) ? parsed.length : 0;
-      } catch {
-        counts[r.id] = 0;
-      }
-    }
-    setTestCounts(counts);
+    let isMounted = true;
+
+    Promise.all([getDashboardData(), getNotifications()])
+      .then(([dashboardData, notificationData]) => {
+        if (!isMounted) return;
+        setDashboard(dashboardData);
+        setNotifications(notificationData.notifications ?? []);
+        setUnreadCount(notificationData.unreadCount ?? 0);
+        setError(null);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError("Failed to load dashboard data.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const recentTests = ROLES.slice(0, 5).map((r) => ({
-    id: r.id,
-    title: r.preview.testTitle,
-    candidates: testCounts[r.id] ?? 0,
-  }));
+  const recentTests = React.useMemo(
+    () =>
+      (dashboard?.recentJobs ?? []).map((job) => ({
+        id: job.id,
+        title: job.title,
+        candidates: job._count?.applications ?? 0,
+      })),
+    [dashboard]
+  );
 
-  const totalCandidates = Object.values(testCounts).reduce((a, b) => a + b, 0);
-  const totalTests = ROLES.length;
+  const recentCandidates = React.useMemo(
+    () =>
+      (dashboard?.recentApplications ?? []).map((application) => ({
+        id: application.id,
+        name: toCandidateName(application),
+        appliedFor: application.job?.title || "Untitled Job",
+        applied: formatDate(application.createdAt),
+      })),
+    [dashboard]
+  );
+
+  const totalTests = dashboard?.stats.totalJobs ?? 0;
+  const totalCandidates = dashboard?.stats.totalApplications ?? 0;
+  const pendingReviews = dashboard?.recentApplications?.filter(
+    (application) => application.status === "submitted"
+  ).length ?? 0;
 
   return (
     <div className="flex flex-col min-h-full">
@@ -118,7 +149,7 @@ export default function DashboardPage() {
               className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
             >
               <IconBell className="h-5 w-5" />
-              {MOCK_NOTIFICATIONS.length > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-corePurple" />
               )}
             </button>
@@ -128,15 +159,22 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-semibold text-zinc-900">Notifications</h3>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
-                  {MOCK_NOTIFICATIONS.map((n) => (
+                  {notifications.length === 0 && (
+                    <div className="px-4 py-3 text-sm text-zinc-500">No notifications</div>
+                  )}
+                  {notifications.map((n) => (
                     <Link
                       key={n.id}
                       href="/candidates"
                       onClick={() => setNotificationsOpen(false)}
                       className="block border-b border-zinc-100 px-4 py-3 text-left transition hover:bg-zinc-50 last:border-b-0"
                     >
-                      <p className="text-sm font-medium text-zinc-900">{n.message}</p>
-                      <p className="mt-0.5 text-xs text-zinc-500">{n.time}</p>
+                      <p className="text-sm font-medium text-zinc-900">
+                        {n.message || n.title || "Notification"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-zinc-500">
+                        {n.createdAt ? formatDate(n.createdAt) : "Just now"}
+                      </p>
                     </Link>
                   ))}
                 </div>
@@ -147,6 +185,16 @@ export default function DashboardPage() {
       </header>
 
       <div className="flex-1 p-8">
+        {isLoading && (
+          <div className="mb-4 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-500">
+            Loading dashboard...
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         {/* Key metrics — compact, scannable */}
         <div className="grid gap-4 sm:grid-cols-3">
           <Link
@@ -182,7 +230,7 @@ export default function DashboardPage() {
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="text-3xl font-bold tabular-nums text-zinc-900">
-              {totalCandidates || 0}
+              {pendingReviews}
             </div>
             <div className="mt-1 text-sm text-zinc-600">Pending review</div>
             <div className="mt-4 text-xs text-zinc-400">
@@ -205,6 +253,9 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="divide-y divide-zinc-100">
+              {recentTests.length === 0 && (
+                <div className="px-6 py-6 text-sm text-zinc-500">No tests yet.</div>
+              )}
               {recentTests.map((t) => (
                 <Link
                   key={t.id}
@@ -245,9 +296,12 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="divide-y divide-zinc-100">
-              {MOCK_RECENT_CANDIDATES.map((c, i) => (
+              {recentCandidates.length === 0 && (
+                <div className="px-6 py-6 text-sm text-zinc-500">No candidates yet.</div>
+              )}
+              {recentCandidates.map((c) => (
                 <Link
-                  key={i}
+                  key={c.id}
                   href="/candidates"
                   className="flex items-center gap-4 px-6 py-4 transition hover:bg-zinc-50/80"
                 >
