@@ -6,7 +6,7 @@ import { useEffect } from "react";
 export default function CreateTestPage() {
   const router = useRouter();
   useEffect(() => {
-    router.replace("/v2");
+    router.replace("/v0");
   }, [router]);
   return (
     <div className="flex min-h-full flex-1 items-center justify-center bg-pageBg p-8">

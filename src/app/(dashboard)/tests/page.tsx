@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ROLES } from "@/lib/roles";
+import { getCompanyProfile } from "@/lib/api";
 
 function IconSearch(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -114,6 +115,13 @@ function IconTrash(props: React.SVGProps<SVGSVGElement>) {
 }
 
 type TestStatus = "active" | "draft" | "closed";
+type TestRow = {
+  id: string;
+  title: string;
+  status: TestStatus;
+  candidates: number;
+  createdAt: string;
+};
 
 // Assign statuses: first 2 active, then draft, closed, active, draft, closed...
 function getStatusForIndex(i: number): TestStatus {
@@ -123,21 +131,45 @@ function getStatusForIndex(i: number): TestStatus {
 
 export default function TestsListPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [testCounts, setTestCounts] = React.useState<Record<string, number>>({});
+  const [tests, setTests] = React.useState<TestRow[]>([]);
+  const [isFallbackMode, setIsFallbackMode] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [menuOpen, setMenuOpen] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const counts: Record<string, number> = {};
-    for (const r of ROLES) {
-      try {
-        const raw = window.localStorage.getItem(`invites:${r.id}`);
-        const parsed = raw ? JSON.parse(raw) : [];
-        counts[r.id] = Array.isArray(parsed) ? parsed.length : 0;
-      } catch {
-        counts[r.id] = 0;
-      }
-    }
-    setTestCounts(counts);
+    let isMounted = true;
+    getCompanyProfile()
+      .then((profile) => {
+        if (!isMounted) return;
+        const jobs = profile.company?.jobs ?? [];
+        const mapped: TestRow[] = jobs.map((job) => ({
+          id: job.id,
+          title: job.title,
+          status: (job.status as TestStatus) || "draft",
+          candidates: job._count?.applications ?? 0,
+          createdAt: job.createdAt,
+        }));
+        setTests(mapped);
+        setIsFallbackMode(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        const fallback: TestRow[] = ROLES.map((role, i) => ({
+          id: role.id,
+          title: role.preview.testTitle,
+          status: getStatusForIndex(i),
+          candidates: 0,
+          createdAt: new Date().toISOString(),
+        }));
+        setTests(fallback);
+        setIsFallbackMode(true);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   React.useEffect(() => {
@@ -150,13 +182,12 @@ export default function TestsListPage() {
 
   const filteredTests = React.useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return ROLES;
-    return ROLES.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.preview.testTitle.toLowerCase().includes(q)
+    if (!q) return tests;
+    return tests.filter(
+      (test) =>
+        test.title.toLowerCase().includes(q) || test.status.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, tests]);
 
   return (
     <div className="flex flex-col">
@@ -169,6 +200,16 @@ export default function TestsListPage() {
       </header>
 
       <div className="flex-1 p-8">
+        {isLoading && (
+          <div className="mb-4 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-500">
+            Loading tests...
+          </div>
+        )}
+        {isFallbackMode && !isLoading && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Backend test endpoints are not ready. Showing fallback mock rows.
+          </div>
+        )}
         <div className="mb-6 flex w-full items-center gap-3">
           <div className="relative min-w-0 flex-1">
             <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -219,20 +260,20 @@ export default function TestsListPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredTests.map((r, i) => {
-                const status = getStatusForIndex(i);
+              {filteredTests.map((test) => {
+                const status = test.status;
                 const isActive = status === "active";
                 return (
                   <tr
-                    key={r.id}
+                    key={test.id}
                     className="border-b border-zinc-100 transition hover:bg-zinc-50/50"
                   >
                     <td className="px-6 py-4">
                       <Link
-                        href={`/tests/${r.id}`}
+                        href={`/tests/${test.id}`}
                         className="font-medium text-zinc-900 hover:text-corePurple"
                       >
-                        {r.preview.testTitle}
+                        {test.title}
                       </Link>
                     </td>
                     <td className="px-6 py-4">
@@ -253,14 +294,16 @@ export default function TestsListPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-zinc-600">
-                      {testCounts[r.id] ?? 0}
+                      {test.candidates}
                     </td>
-                    <td className="px-6 py-4 text-zinc-600">Feb 3, 2026</td>
+                    <td className="px-6 py-4 text-zinc-600">
+                      {new Date(test.createdAt).toLocaleDateString()}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
                         {isActive && (
                           <Link
-                            href={`/tests/${r.id}/candidates?invite=1`}
+                            href={`/tests/${test.id}/candidates?invite=1`}
                             className="inline-flex h-8 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
                           >
                             Invite
@@ -272,41 +315,45 @@ export default function TestsListPage() {
                             aria-label="More"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setMenuOpen(menuOpen === r.id ? null : r.id);
+                              setMenuOpen(menuOpen === test.id ? null : test.id);
                             }}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100"
                           >
                             <IconDots className="h-5 w-5" />
                           </button>
-                          {menuOpen === r.id && (
+                          {menuOpen === test.id && (
                             <div
                               className="absolute right-0 top-full z-20 mt-1 min-w-[140px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                                disabled={isFallbackMode}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-zinc-400"
                               >
                                 <IconPencil className="h-4 w-4" />
                                 Rename
                               </button>
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                                disabled={isFallbackMode}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-zinc-400"
                               >
                                 <IconDuplicate className="h-4 w-4" />
                                 Duplicate
                               </button>
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                                disabled={isFallbackMode}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-zinc-400"
                               >
                                 <IconArchive className="h-4 w-4" />
                                 Archive
                               </button>
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                disabled={isFallbackMode}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-zinc-400"
                               >
                                 <IconTrash className="h-4 w-4" />
                                 Delete
