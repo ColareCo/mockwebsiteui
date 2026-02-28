@@ -37,7 +37,8 @@ export const ROLES: Role[] = [
           subtitle: "1 Dimensional control question",
         },
       ],
-      previewUrl: "https://dev.d2jomrkv8mmxdn.amplifyapp.com/assessment?instance=mech-design-engineer-preview",
+      // Note: Instance ID must match MECH_DESIGN_PREVIEW_INSTANCE constant in assessment-platform/src/app/constants/instances.ts
+      previewUrl: "https://dev.d2jomrkv8mmxdn.amplifyapp.com?instance=mech-design-engineer-preview",
     },
   },
   {
